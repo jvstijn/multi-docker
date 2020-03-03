@@ -1,0 +1,25 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t  jvstijn/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run jvstijn/react-test npm test -- --coverage
+
+after_succes:
+  - docker build -t jvstijn/multi-client ./client
+  - docker build -t jvstijn/multi-nginx ./nginx
+  - docker build -t jvstijn/multi-server ./server
+  - docker build -t jvstijn/multi-worker ./worker
+  # Docker login
+  - echo "$DOCKER_PASSWORD"| docker login -u "$DOCKER_ID" --password-stdin
+  #take those images en put them to docker hub
+  - docker push jvstijn/multi-client
+  - docker push jvstijn/multi-nginx 
+  - docker push jvstijn/multi-server
+  - docker push jvstijn/multi-worker
+
+
+
